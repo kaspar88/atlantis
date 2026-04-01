@@ -20,10 +20,12 @@ resource "kubernetes_secret" "atlantis_vcs" {
   type = "Opaque"
 
   data = {
-    github_user   = "atlantis-bot"
-    github_token  = local.github_token
-    github_secret = random_password.atlantis_webhook_secret.result
+    github_user   = base64encode("atlantis-bot")
+    github_token  = base64encode(local.github_token)
+    github_secret = base64encode(random_password.atlantis_webhook_secret.result)
   }
+
+  depends_on = [kubernetes_namespace.atlantis]
 }
 
 resource "kubernetes_storage_class_v1" "gp3" {
@@ -78,8 +80,6 @@ resource "helm_release" "atlantis" {
         user = "atlantis-bot"
       }
 
-      atlantisUrl = local.atlantis_url
-
       volumeClaim = {
         enabled          = true
         dataStorage      = "5Gi"
@@ -103,6 +103,7 @@ resource "helm_release" "atlantis" {
     module.eks,
     kubernetes_namespace.atlantis,
     kubernetes_secret.atlantis_vcs,
+    kubernetes_storage_class_v1.gp3,
     aws_iam_role_policy_attachment.atlantis_backend
   ]
 }
@@ -144,8 +145,4 @@ resource "github_repository_webhook" "atlantis" {
 
 output "atlantis_url" {
   value = local.atlantis_url
-}
-
-output "atlantis_ok" {
-  value = local.atlantis_test
 }
