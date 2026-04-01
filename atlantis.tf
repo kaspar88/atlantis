@@ -56,10 +56,6 @@ resource "helm_release" "atlantis" {
 
       vcsSecretName = kubernetes_secret.atlantis_vcs.metadata[0].name
 
-      github = {
-        user = "atlantis-bot"
-      }
-
       service = {
         type       = "LoadBalancer"
         port       = 80
@@ -73,7 +69,16 @@ resource "helm_release" "atlantis" {
       serviceAccount = {
         create = true
         name   = "atlantis"
+        annotations = {
+          "eks.amazonaws.com/role-arn" = aws_iam_role.atlantis_irsa.arn
+        }
       }
+
+      github = {
+        user = "atlantis-bot"
+      }
+
+      atlantisUrl = local.atlantis_url
 
       volumeClaim = {
         enabled          = true
@@ -97,7 +102,8 @@ resource "helm_release" "atlantis" {
   depends_on = [
     module.eks,
     kubernetes_namespace.atlantis,
-    kubernetes_secret.atlantis_vcs
+    kubernetes_secret.atlantis_vcs,
+    aws_iam_role_policy_attachment.atlantis_backend
   ]
 }
 

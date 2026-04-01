@@ -14,3 +14,82 @@ resource "aws_iam_role" "eks_readonly" {
   name               = "${local.cluster_name}-eks-readonly-role"
   assume_role_policy = data.aws_iam_policy_document.eks_assume_role.json
 }
+
+
+data "aws_iam_policy_document" "atlantis_assume_role" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [module.eks.oidc_provider_arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(module.eks.oidc_provider, "https://", "")}:sub"
+      values   = ["system:serviceaccount:atlantis:atlantis"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(module.eks.oidc_provider, "https://", "")}:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "atlantis_irsa" {
+  name               = "${local.cluster_name}-atlantis-irsa"
+  assume_role_policy = data.aws_iam_policy_document.atlantis_assume_role.json
+}
+
+data "aws_iam_policy_document" "atlantis_backend" {
+  statement {
+    sid = "S3BackendBucket"
+    actions = [
+      "s3:ListBucket",
+      "s3:GetBucketLocation",
+    ]
+    resources = [
+      "arn:aws:s3:::kaspar-atlantis-terraform-state"
+    ]
+  }
+
+  statement {
+    sid = "S3BackendObjects"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+    ]
+    resources = [
+      "arn:aws:s3:::kaspar-atlantis-terraform-state/*"
+    ]
+  }
+
+  statement {
+    sid = "DynamoDBLockTable"
+    actions = [
+      "dynamodb:DescribeTable",
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:DeleteItem",
+      "dynamodb:UpdateItem",
+    ]
+    resources = [
+      "arn:aws:dynamodb:eu-north-1:${data.aws_caller_identity.current.account_id}:table/kaspar-atlantis-terraform"
+    ]
+  }
+
+}
+
+resource "aws_iam_policy" "atlantis_backend" {
+  name   = "${local.cluster_name}-atlantis-backend"
+  policy = data.aws_iam_policy_document.atlantis_backend.json
+}
+
+resource "aws_iam_role_policy_attachment" "atlantis_backend" {
+  role       = aws_iam_role.atlantis_irsa.name
+  policy_arn = aws_iam_policy.atlantis_backend.arn
+}
