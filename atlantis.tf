@@ -19,7 +19,7 @@ resource "kubernetes_secret" "atlantis_vcs" {
 
   type = "Opaque"
 
-  string_data = {
+  data = {
     github_user   = "atlantis-bot"
     github_token  = local.github_token
     github_secret = random_password.atlantis_webhook_secret.result
