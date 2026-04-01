@@ -19,7 +19,7 @@ data "aws_iam_policy_document" "eks_assume_role" {
 
 
 data "aws_secretsmanager_secret" "github_token" {
-  name = atlantis
+  name = "atlantis"
 }
 
 data "aws_secretsmanager_secret_version" "github_token" {
