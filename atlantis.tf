@@ -147,6 +147,3 @@ output "atlantis_url" {
   value = local.atlantis_url
 }
 
-output "atlantis_ok" {
-  value = local.atlantis_test
-}
