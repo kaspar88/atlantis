@@ -1,0 +1,135 @@
+name: Terraform AWS
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "Is the plan approved?"
+        default: "no"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  terraform-plan:
+    name: Plan
+    runs-on: ubuntu-24.04
+    outputs:
+      tfplanExitCode: ${{ steps.plan.outputs.exitcode }}
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+
+    env:
+      AWS_REGION: eu-north-1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials from OIDC
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::601804669954:role/kaspar-atlantis-terraform
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Use Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.14.1
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        id: init
+        run: terraform init -no-color
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          exitcode=0
+          terraform plan -no-color -input=false -out=test-tfplan || exitcode=$?
+          echo "exitcode=$exitcode" >> "$GITHUB_OUTPUT"
+          if [ "$exitcode" -eq 1 ]; then
+            echo "Terraform Plan Failed!"
+            exit 1
+          fi
+          echo "Terraform Plan Succeeded!"
+        shell: bash
+
+      - name: Terraform plan upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-plan
+          path: test-tfplan
+          retention-days: 2
+
+  terraform-apply:
+    name: Apply
+    runs-on: ubuntu-24.04
+    needs: terraform-plan
+    
+    permissions:
+      contents: read
+      id-token: write  
+      
+    env:
+      AWS_REGION: eu-north-1
+      
+    steps:     
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Check if plan is approved
+      run: |
+        if [ "${{ github.event.inputs.name }}" == "yes" ]
+          then
+            echo "Plan is approved, will continue, good luck ${GITHUB_ACTOR}"
+          else
+            echo "Plan is either not approved or approved with a wrong string"
+            echo "Use yes or no, you used ${{ github.event.inputs.name }}"
+            exit 1
+          fi
+      
+    - name: Configure AWS credentials from OIDC
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        role-to-assume: arn:aws:iam::601804669954:role/kaspar-atlantis-terraform
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Verify AWS identity
+      run: aws sts get-caller-identity
+
+    - name: Download terraform plan
+      uses: actions/download-artifact@v4
+      with:
+        name: test-plan
+        
+    - name: Use Terraform 1.14.1
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.14.1
+        terraform_wrapper: false
+      
+    - name: Terraform Init
+      id: init
+      run: terraform init
+      continue-on-error: true
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+      continue-on-error: true
+      
+    - name: Terraform apply
+      id: apply
+      run: terraform apply test-tfplan
+      continue-on-error: true 
