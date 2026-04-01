@@ -48,5 +48,5 @@ provider "helm" {
 
 provider "github" {
   owner = "kaspar88"
-  token = data.aws_secretsmanager_secret_version.github_token.secret_string
+  token = local.github_token
 }

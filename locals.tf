@@ -20,5 +20,9 @@ locals {
   eks_ng_min_size                  = "1"
   eks_ng_max_size                  = "2"
   eks_ng_desired_size              = "2"
+  
+  github_token = jsondecode(
+    data.aws_secretsmanager_secret_version.github_token.secret_string
+  ).ATLANTIS_GITHUB_TOKEN
 }
   
