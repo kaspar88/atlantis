@@ -18,7 +18,7 @@ locals {
   eks_node_type                    = "t3.small"
   eks_ng_root_disk_size            = "20"
   eks_ng_min_size                  = "1"
-  eks_ng_max_size                  = "3"
+  eks_ng_max_size                  = "2"
   eks_ng_desired_size              = "2"
 }
   
