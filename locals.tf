@@ -25,6 +25,6 @@ locals {
     data.aws_secretsmanager_secret_version.github_token.secret_string
   ).ATLANTIS_GITHUB_TOKEN
   
-  atlantis_test = "ok"
+  atlantis8_test = "ok"
 }
   
