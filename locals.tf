@@ -1,5 +1,5 @@
 locals {
-  az_count                             = 1
+  az_count                             = 2
   cluster_name                         = "kaspar-atlantis"
   cluster_cidr                         = "10.20.0.0/16"
   cluster_version                      = "1.35"
