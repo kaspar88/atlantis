@@ -146,3 +146,7 @@ resource "github_repository_webhook" "atlantis" {
 output "atlantis_url" {
   value = local.atlantis_url
 }
+
+output "atlantis_test"
+  value = local.atlantis_666_test
+}
