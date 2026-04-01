@@ -33,3 +33,12 @@ data "aws_secretsmanager_secret" "github_token" {
 data "aws_secretsmanager_secret_version" "github_token" {
   secret_id = data.aws_secretsmanager_secret.github_token.id
 }
+
+data "kubernetes_service" "atlantis" {
+  metadata {
+    name      = "atlantis"
+    namespace = kubernetes_namespace.atlantis.metadata[0].name
+  }
+
+  depends_on = [helm_release.atlantis]
+}

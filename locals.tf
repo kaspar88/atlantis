@@ -28,5 +28,6 @@ locals {
   atlantis_test = "ok"
   atlantis_oidc_issuer      = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
   atlantis_oidc_issuer_host = replace(local.atlantis_oidc_issuer, "https://", "")
+  atlantis_url = "http://${data.kubernetes_service.atlantis.status[0].load_balancer[0].ingress[0].hostname}"
 }
   

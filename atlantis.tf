@@ -108,19 +108,6 @@ resource "helm_release" "atlantis" {
   ]
 }
 
-data "kubernetes_service" "atlantis" {
-  metadata {
-    name      = "atlantis"
-    namespace = kubernetes_namespace.atlantis.metadata[0].name
-  }
-
-  depends_on = [helm_release.atlantis]
-}
-
-locals {
-  atlantis_url = "http://${data.kubernetes_service.atlantis.status[0].load_balancer[0].ingress[0].hostname}"
-}
-
 resource "github_repository_webhook" "atlantis" {
   repository = "atlantis"
 
@@ -141,12 +128,4 @@ resource "github_repository_webhook" "atlantis" {
   }
 
   depends_on = [helm_release.atlantis]
-}
-
-output "atlantis_url" {
-  value = local.atlantis_url
-}
-
-output "atlantis_ok" {
-  value = local.atlantis_test
 }
