@@ -148,5 +148,5 @@ output "atlantis_url" {
 }
 
 output "atlantis_ok" {
-  value = local.atlantis_test
+  value = local.atlantis_ok
 }
