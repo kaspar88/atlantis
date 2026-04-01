@@ -56,7 +56,7 @@ data "aws_iam_policy_document" "atlantis_backend" {
       "s3:GetBucketLocation",
     ]
     resources = [
-      "arn:aws:s3:::kaspar-atlantis-terraform-state"
+      "arn:aws:s3:::kaspar-atlantis-terraform"
     ]
   }
 
@@ -68,7 +68,7 @@ data "aws_iam_policy_document" "atlantis_backend" {
       "s3:DeleteObject",
     ]
     resources = [
-      "arn:aws:s3:::kaspar-atlantis-terraform-state/*"
+      "arn:aws:s3:::kaspar-atlantis-terraform/*"
     ]
   }
 
