@@ -10,9 +10,7 @@ module "eks" {
   subnet_ids                               = module.vpc.private_subnets
   vpc_id                                   = module.vpc.vpc_id
   enable_irsa                              = true
-  endpoint_public_access_cidrs             = [
-    "${module.vpc.nat_public_ips[0]}/32",
-  ]
+
   authentication_mode              = "API_AND_CONFIG_MAP"
 
  access_entries = {
