@@ -26,5 +26,7 @@ locals {
   ).ATLANTIS_GITHUB_TOKEN
   
   atlantis_test = "ok"
+  atlantis_oidc_issuer      = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
+  atlantis_oidc_issuer_host = replace(local.atlantis_oidc_issuer, "https://", "")
 }
   
