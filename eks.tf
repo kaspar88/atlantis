@@ -50,6 +50,13 @@ module "eks" {
 
   
   addons = {
+    aws-ebs-csi-driver = {
+      version                     = "v1.46.0-eksbuild.1"
+      service_account_role_arn = module.ebs_csi_irsa.iam_role_arn
+      resolve_conflicts_on_create = "OVERWRITE"
+      resolve_conflicts_on_update = "OVERWRITE"
+
+    }
 
     eks-pod-identity-agent = {
       before_compute = true
