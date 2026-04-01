@@ -86,7 +86,6 @@ module "eks" {
       use_name_prefix                    = true
       ami_type                           = "AL2023_x86_64_STANDARD"
       instance_types                     = [local.eks_node_type]
-      key_name                           = aws_key_pair.node_access.key_name
       min_size                           = local.eks_ng_min_size
       max_size                           = local.eks_ng_max_size
       desired_size                       = local.eks_ng_desired_size
