@@ -31,11 +31,18 @@ resource "helm_release" "atlantis" {
   repository = "https://runatlantis.github.io/helm-charts"
   chart      = "atlantis"
 
+  timeout         = 900
+  cleanup_on_fail = true
+
   values = [
     yamlencode({
       orgAllowlist = "github.com/kaspar88/*"
 
       vcsSecretName = kubernetes_secret.atlantis_vcs.metadata[0].name
+
+      github = {
+        user = "atlantis-bot"
+      }
 
       service = {
         type       = "LoadBalancer"
@@ -53,12 +60,9 @@ resource "helm_release" "atlantis" {
       }
 
       volumeClaim = {
-        enabled     = true
-        dataStorage = "5Gi"
-      }
-
-      github = {
-        user = "atlantis-bot"
+        enabled          = true
+        dataStorage      = "5Gi"
+        storageClassName = "gp3"
       }
 
       resources = {
