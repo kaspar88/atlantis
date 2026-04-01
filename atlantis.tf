@@ -26,7 +26,7 @@ resource "kubernetes_secret" "atlantis_vcs" {
 }
 
 resource "helm_release" "atlantis" {
-  name       = "atlantis"
+  name       = "atlantis2"
   namespace  = kubernetes_namespace.atlantis.metadata[0].name
   repository = "https://runatlantis.github.io/helm-charts"
   chart      = "atlantis"
