@@ -19,9 +19,9 @@ resource "kubernetes_secret" "atlantis_vcs" {
 
   type = "Opaque"
 
-  string_data = {
-    token  = data.aws_secretsmanager_secret_version.github_token.secret_string
-    secret = random_password.atlantis_webhook_secret.result
+  data = {
+    token  = base64encode(data.aws_secretsmanager_secret_version.github_token.secret_string)
+    secret = base64encode(random_password.atlantis_webhook_secret.result)
   }
 }
 
