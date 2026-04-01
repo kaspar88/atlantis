@@ -18,22 +18,25 @@ resource "aws_iam_role" "eks_readonly" {
 
 data "aws_iam_policy_document" "atlantis_assume_role" {
   statement {
+    effect  = "Allow"
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
     principals {
-      type        = "Federated"
-      identifiers = [module.eks.oidc_provider_arn]
+      type = "Federated"
+      identifiers = [
+        "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.atlantis_oidc_issuer_host}"
+      ]
     }
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(module.eks.oidc_provider, "https://", "")}:sub"
+      variable = "${local.atlantis_oidc_issuer_host}:sub"
       values   = ["system:serviceaccount:atlantis:atlantis"]
     }
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(module.eks.oidc_provider, "https://", "")}:aud"
+      variable = "${local.atlantis_oidc_issuer_host}:aud"
       values   = ["sts.amazonaws.com"]
     }
   }
@@ -43,6 +46,7 @@ resource "aws_iam_role" "atlantis_irsa" {
   name               = "${local.cluster_name}-atlantis-irsa"
   assume_role_policy = data.aws_iam_policy_document.atlantis_assume_role.json
 }
+
 
 data "aws_iam_policy_document" "atlantis_backend" {
   statement {
