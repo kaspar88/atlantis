@@ -20,8 +20,8 @@ resource "kubernetes_secret" "atlantis_vcs" {
   type = "Opaque"
 
   data = {
-    token  = base64encode(data.aws_secretsmanager_secret_version.github_token.secret_string)
-    secret = base64encode(random_password.atlantis_webhook_secret.result)
+    github_token  = base64encode(data.aws_secretsmanager_secret_version.github_token.secret_string)
+    github_secret = base64encode(random_password.atlantis_webhook_secret.result)
   }
 }
 
@@ -41,7 +41,7 @@ resource "kubernetes_storage_class_v1" "gp3" {
 }
 
 resource "helm_release" "atlantis" {
-  name       = "atlantis2"
+  name       = "atlantis"
   namespace  = kubernetes_namespace.atlantis.metadata[0].name
   repository = "https://runatlantis.github.io/helm-charts"
   chart      = "atlantis"
