@@ -25,6 +25,21 @@ resource "kubernetes_secret" "atlantis_vcs" {
   }
 }
 
+resource "kubernetes_storage_class_v1" "gp3" {
+  metadata {
+    name = "gp3"
+  }
+
+  storage_provisioner = "ebs.csi.aws.com"
+  reclaim_policy      = "Delete"
+  volume_binding_mode = "WaitForFirstConsumer"
+
+  parameters = {
+    type      = "gp3"
+    encrypted = "true"
+  }
+}
+
 resource "helm_release" "atlantis" {
   name       = "atlantis2"
   namespace  = kubernetes_namespace.atlantis.metadata[0].name
